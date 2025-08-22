@@ -1,10 +1,10 @@
 <script setup>
-import JSONLab from './components/JSON.vue'
+import UserInfoForm from './components/UserInfoForm.vue'
 </script>
 
 <template>
   <main>
-    <JSONLab />
+    <UserInfoForm />
   </main>
 </template>
 
