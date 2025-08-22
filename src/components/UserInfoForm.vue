@@ -6,7 +6,7 @@ const INITIAL_FORM = {
   password: '',
   isAustralian: false,
   gender: '',
-  reason: '',
+  reason: ''
 }
 
 const form = ref({ ...INITIAL_FORM })
@@ -15,15 +15,15 @@ const submissions = ref([])
 const onSubmit = (e) => {
   e.preventDefault()
   const formEl = e.target
-
   if (!formEl.checkValidity()) {
     e.stopPropagation()
     formEl.classList.add('was-validated')
     return
   }
-
-  submissions.value.push({ ...form.value })
-
+  submissions.value.push({
+    ...form.value,
+    submittedAt: new Date().toLocaleString()
+  })
   Object.assign(form.value, INITIAL_FORM)
   formEl.classList.remove('was-validated')
 }
@@ -34,17 +34,15 @@ const onClear = (e) => {
   if (formEl) formEl.classList.remove('was-validated')
 }
 
-const clearAllCards = () => {
-  submissions.value = []
-}
+const clearAll = () => { submissions.value = [] }
 </script>
 
 <template>
   <div class="container mt-5">
     <h1 class="text-center mb-4">User Information Form</h1>
 
+    <!-- Form -->
     <form class="needs-validation" novalidate @submit="onSubmit">
-      <!-- Row 1: Username / Password -->
       <div class="row g-3">
         <div class="col-12 col-md-6">
           <label for="username" class="form-label">Username</label>
@@ -53,6 +51,8 @@ const clearAllCards = () => {
             v-model.trim="form.username"
             type="text"
             class="form-control"
+            placeholder="Enter your username"
+            autocomplete="username"
             required
           />
           <div class="invalid-feedback">Please enter your username.</div>
@@ -65,24 +65,20 @@ const clearAllCards = () => {
             v-model="form.password"
             type="password"
             class="form-control"
+            placeholder="At least 6 characters"
             minlength="6"
+            autocomplete="new-password"
             required
           />
           <div class="invalid-feedback">Password must be at least 6 characters.</div>
         </div>
       </div>
 
-      <!-- Row 2: Australian Resident? / Gender -->
       <div class="row g-3 mt-1">
         <div class="col-12 col-md-6 d-flex align-items-center">
-          <div class="form-check mt-4 mt-md-0">
-            <input
-              id="isAustralian"
-              v-model="form.isAustralian"
-              class="form-check-input"
-              type="checkbox"
-            />
-            <label class="form-check-label" for="isAustralian"> Australian Resident? </label>
+          <div class="form-check form-switch mt-4 mt-md-0">
+            <input id="isAustralian" v-model="form.isAustralian" class="form-check-input" type="checkbox" />
+            <label class="form-check-label" for="isAustralian">Australian Resident?</label>
           </div>
         </div>
 
@@ -93,55 +89,74 @@ const clearAllCards = () => {
             <option value="male">male</option>
             <option value="female">female</option>
             <option value="other">other</option>
+            <option value="prefer_not_to_say">prefer not to say</option>
           </select>
           <div class="invalid-feedback">Please select your gender.</div>
         </div>
       </div>
 
-      <!-- Row 3: Reason -->
       <div class="mt-3">
         <label for="reason" class="form-label">Reason for joining</label>
-        <textarea id="reason" v-model.trim="form.reason" class="form-control" rows="4" required />
+        <textarea
+          id="reason"
+          v-model.trim="form.reason"
+          class="form-control"
+          rows="4"
+          placeholder="Tell us briefly why you are joining..."
+          required
+        />
         <div class="invalid-feedback">Please tell us your reason.</div>
       </div>
 
-      <!-- Actions -->
       <div class="d-flex gap-2 mt-4">
         <button class="btn btn-primary" type="submit">Submit</button>
         <button class="btn btn-secondary" type="button" @click="onClear">Clear</button>
-
-        <button
-          v-if="submissions.length"
-          class="btn btn-outline-danger ms-auto"
-          type="button"
-          @click="clearAllCards"
-        >
-          Clear All Cards
-        </button>
       </div>
     </form>
 
-    <div class="row row-cols-1 row-cols-md-2 g-4 mt-4" v-if="submissions.length">
-      <div class="col" v-for="(s, idx) in submissions" :key="idx">
-        <div class="card h-100 shadow-sm">
-          <div class="card-header bg-primary text-white">User Information</div>
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item"><strong>Username:</strong> {{ s.username }}</li>
-            <li class="list-group-item"><strong>Password:</strong> {{ s.password }}</li>
-            <li class="list-group-item">
-              <strong>Australian Resident:</strong> {{ s.isAustralian ? 'Yes' : 'No' }}
-            </li>
-            <li class="list-group-item"><strong>Gender:</strong> {{ s.gender }}</li>
-            <li class="list-group-item"><strong>Reason:</strong> {{ s.reason }}</li>
-          </ul>
-        </div>
+    <!-- Horizontal table (submissions) -->
+    <div class="card mt-4" v-if="submissions.length">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-semibold">Submissions</span>
+        <button class="btn btn-sm btn-outline-danger" @click="clearAll">Clear All</button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th style="width:56px;">#</th>
+              <th>Username</th>
+              <th>Password</th>
+              <th>Australian Resident</th>
+              <th>Gender</th>
+              <th style="min-width: 260px;">Reason</th>
+              <th>Submitted At</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(s, i) in submissions" :key="i">
+              <td>{{ i + 1 }}</td>
+              <td class="text-nowrap">{{ s.username }}</td>
+              <td class="text-nowrap">{{ s.password ? '*'.repeat(s.password.length) : '' }}</td>
+              <td>
+                <span :class="['badge', s.isAustralian ? 'text-bg-success' : 'text-bg-secondary']">
+                  {{ s.isAustralian ? 'Yes' : 'No' }}
+                </span>
+              </td>
+              <td class="text-nowrap">{{ s.gender }}</td>
+              <td style="white-space: pre-wrap;">{{ s.reason }}</td>
+              <td class="text-nowrap">{{ s.submittedAt }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-h1 {
-  letter-spacing: 0.5px;
-}
+h1 { letter-spacing: .5px; }
+
+.table-responsive { overflow-x: auto; }
 </style>
