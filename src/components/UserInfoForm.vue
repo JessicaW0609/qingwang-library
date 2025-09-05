@@ -1,40 +1,58 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 const INITIAL_FORM = {
   username: '',
   password: '',
+  confirmPassword: '',
   isAustralian: false,
   gender: '',
-  reason: ''
+  reason: '',
 }
 
 const form = ref({ ...INITIAL_FORM })
 const submissions = ref([])
 
+const submitAttempted = ref(false)
+const isPasswordMismatch = computed(
+  () => form.value.confirmPassword.length > 0 && form.value.password !== form.value.confirmPassword,
+)
+const canSubmit = computed(() => !isPasswordMismatch.value)
+
 const onSubmit = (e) => {
   e.preventDefault()
+  submitAttempted.value = true
+
+  if (isPasswordMismatch.value) return
+
   const formEl = e.target
+
   if (!formEl.checkValidity()) {
     e.stopPropagation()
     formEl.classList.add('was-validated')
     return
   }
+
   submissions.value.push({
     ...form.value,
-    submittedAt: new Date().toLocaleString()
+    submittedAt: new Date().toLocaleString(),
   })
+
   Object.assign(form.value, INITIAL_FORM)
   formEl.classList.remove('was-validated')
+  submitAttempted.value = false
 }
 
 const onClear = (e) => {
   const formEl = e.target.closest('form')
   Object.assign(form.value, INITIAL_FORM)
+  submitAttempted.value = false
   if (formEl) formEl.classList.remove('was-validated')
 }
 
-const clearAll = () => { submissions.value = [] }
+const clearAll = () => {
+  submissions.value = []
+}
 </script>
 
 <template>
@@ -75,13 +93,48 @@ const clearAll = () => { submissions.value = [] }
       </div>
 
       <div class="row g-3 mt-1">
+        <div class="col-12 col-md-6">
+          <label for="confirmPassword" class="form-label">Confirm password</label>
+          <input
+            id="confirmPassword"
+            v-model="form.confirmPassword"
+            type="password"
+            class="form-control"
+            placeholder="Re-enter your password"
+            autocomplete="new-password"
+            required
+            :aria-invalid="isPasswordMismatch ? 'true' : 'false'"
+            aria-describedby="pw-mismatch"
+          />
+
+          <div
+            id="pw-mismatch"
+            class="text-danger mt-1"
+            role="alert"
+            v-if="
+              (form.confirmPassword && isPasswordMismatch) ||
+              (submitAttempted && isPasswordMismatch)
+            "
+          >
+            Passwords do not match.
+          </div>
+          <div class="invalid-feedback">Please confirm your password.</div>
+        </div>
+
         <div class="col-12 col-md-6 d-flex align-items-center">
           <div class="form-check form-switch mt-4 mt-md-0">
-            <input id="isAustralian" v-model="form.isAustralian" class="form-check-input" type="checkbox" />
+            <input
+              id="isAustralian"
+              v-model="form.isAustralian"
+              class="form-check-input"
+              type="checkbox"
+            />
             <label class="form-check-label" for="isAustralian">Australian Resident?</label>
           </div>
         </div>
+      </div>
 
+      <div class="row g-3 mt-1">
         <div class="col-12 col-md-6">
           <label for="gender" class="form-label">Gender</label>
           <select id="gender" v-model="form.gender" class="form-select" required>
@@ -93,23 +146,23 @@ const clearAll = () => { submissions.value = [] }
           </select>
           <div class="invalid-feedback">Please select your gender.</div>
         </div>
-      </div>
 
-      <div class="mt-3">
-        <label for="reason" class="form-label">Reason for joining</label>
-        <textarea
-          id="reason"
-          v-model.trim="form.reason"
-          class="form-control"
-          rows="4"
-          placeholder="Tell us briefly why you are joining..."
-          required
-        />
-        <div class="invalid-feedback">Please tell us your reason.</div>
+        <div class="col-12 col-md-6">
+          <label for="reason" class="form-label">Reason for joining</label>
+          <textarea
+            id="reason"
+            v-model.trim="form.reason"
+            class="form-control"
+            rows="4"
+            placeholder="Tell us briefly why you are joining..."
+            required
+          />
+          <div class="invalid-feedback">Please tell us your reason.</div>
+        </div>
       </div>
 
       <div class="d-flex gap-2 mt-4">
-        <button class="btn btn-primary" type="submit">Submit</button>
+        <button class="btn btn-primary" type="submit" :disabled="!canSubmit">Submit</button>
         <button class="btn btn-secondary" type="button" @click="onClear">Clear</button>
       </div>
     </form>
@@ -125,12 +178,12 @@ const clearAll = () => { submissions.value = [] }
         <table class="table table-hover mb-0 align-middle">
           <thead class="table-light">
             <tr>
-              <th style="width:56px;">#</th>
+              <th style="width: 56px">#</th>
               <th>Username</th>
               <th>Password</th>
               <th>Australian Resident</th>
               <th>Gender</th>
-              <th style="min-width: 260px;">Reason</th>
+              <th style="min-width: 260px">Reason</th>
               <th>Submitted At</th>
             </tr>
           </thead>
@@ -145,7 +198,7 @@ const clearAll = () => { submissions.value = [] }
                 </span>
               </td>
               <td class="text-nowrap">{{ s.gender }}</td>
-              <td style="white-space: pre-wrap;">{{ s.reason }}</td>
+              <td style="white-space: pre-wrap">{{ s.reason }}</td>
               <td class="text-nowrap">{{ s.submittedAt }}</td>
             </tr>
           </tbody>
@@ -156,7 +209,10 @@ const clearAll = () => { submissions.value = [] }
 </template>
 
 <style scoped>
-h1 { letter-spacing: .5px; }
-
-.table-responsive { overflow-x: auto; }
+h1 {
+  letter-spacing: 0.5px;
+}
+.table-responsive {
+  overflow-x: auto;
+}
 </style>
