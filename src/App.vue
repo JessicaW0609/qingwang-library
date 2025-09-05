@@ -1,11 +1,47 @@
 <script setup>
-import UserInfoForm from './components/UserInfoForm.vue'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const isAuthenticated = ref(localStorage.getItem('isAuthenticated') === 'true')
+const router = useRouter()
+
+function toggleLogin() {
+  if (isAuthenticated.value) {
+    localStorage.removeItem('isAuthenticated')
+    isAuthenticated.value = false
+    router.push('/')
+  } else {
+    localStorage.setItem('isAuthenticated', 'true')
+    isAuthenticated.value = true
+  }
+}
 </script>
 
 <template>
-  <main>
-    <UserInfoForm />
-  </main>
+  <div>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-3">
+      <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="#">My Library App</a>
+        <div class="collapse navbar-collapse">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <router-link class="nav-link" to="/">Home</router-link>
+            </li>
+            <li class="nav-item">
+              <router-link class="nav-link" to="/about">About</router-link>
+            </li>
+          </ul>
+          <button class="btn btn-outline-primary" @click="toggleLogin">
+            {{ isAuthenticated ? 'Logout' : 'Login' }}
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container">
+      <router-view />
+    </main>
+  </div>
 </template>
 
 <style scoped>
