@@ -5,6 +5,7 @@ const HomeView = () => import('../views/HomeView.vue')
 const AboutView = () => import('../views/AboutView.vue')
 const FirebaseSigninView = () => import('../views/FirebaseSigninView.vue')
 const FirebaseRegisterView = () => import('../views/FirebaseRegisterView.vue')
+const AddBookView = () => import('../views/AddBookView.vue')
 const LogoutView = () => import('../views/LogoutView.vue')
 
 const routes = [
@@ -17,6 +18,7 @@ const routes = [
   },
   { path: '/firelogin', name: 'firelogin', component: FirebaseSigninView },
   { path: '/fireregister', name: 'fireregister', component: FirebaseRegisterView },
+  { path: '/addbook', name: 'addbook', component: AddBookView },
   { path: '/logout', name: 'logout', component: LogoutView },
 ]
 
@@ -28,15 +30,12 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const authed = localStorage.getItem('isAuthenticated') === 'true'
   const role = localStorage.getItem('role')
-
   if (to.meta.requiresAuth && !authed) {
     return next({ name: 'home', query: { redirect: to.fullPath } })
   }
-
   if (to.meta.role && to.meta.role !== role) {
     return next({ name: 'home' })
   }
-
   return next()
 })
 

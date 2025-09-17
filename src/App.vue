@@ -68,6 +68,10 @@ function toggleLogin() {
               <router-link class="nav-link" to="/fireregister">Register</router-link>
             </li>
 
+            <li class="nav-item">
+              <router-link class="nav-link" to="/addbook">Add Book</router-link>
+            </li>
+
             <li class="nav-item" v-if="isAuthenticated">
               <router-link class="nav-link" to="/logout">Log out</router-link>
             </li>
