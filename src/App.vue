@@ -22,7 +22,17 @@ function toggleLogin() {
     <nav class="navbar navbar-expand-lg navbar-light bg-light mb-3">
       <div class="container-fluid">
         <a class="navbar-brand fw-bold" href="#">My Library App</a>
-        <div class="collapse navbar-collapse">
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navMain"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navMain">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
               <router-link class="nav-link" to="/">Home</router-link>
@@ -30,7 +40,16 @@ function toggleLogin() {
             <li class="nav-item">
               <router-link class="nav-link" to="/about">About</router-link>
             </li>
+
+            <li class="nav-item">
+              <router-link class="nav-link" to="/firelogin">Firebase Login</router-link>
+            </li>
+
+            <li class="nav-item">
+              <router-link class="nav-link" to="/fireregister">Register</router-link>
+            </li>
           </ul>
+
           <button class="btn btn-outline-primary" @click="toggleLogin">
             {{ isAuthenticated ? 'Logout' : 'Login' }}
           </button>
