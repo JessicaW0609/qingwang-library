@@ -1,13 +1,34 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 
 const isAuthenticated = ref(localStorage.getItem('isAuthenticated') === 'true')
 const router = useRouter()
 
+function syncFromLocal() {
+  isAuthenticated.value = localStorage.getItem('isAuthenticated') === 'true'
+}
+
+function onStorage(e) {
+  if (['isAuthenticated', 'email', 'role'].includes(e.key)) {
+    syncFromLocal()
+  }
+}
+
+onMounted(() => {
+  syncFromLocal()
+  window.addEventListener('storage', onStorage)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('storage', onStorage)
+})
+
 function toggleLogin() {
   if (isAuthenticated.value) {
     localStorage.removeItem('isAuthenticated')
+    localStorage.removeItem('email')
+    localStorage.removeItem('role')
     isAuthenticated.value = false
     router.push('/')
   } else {
@@ -40,13 +61,15 @@ function toggleLogin() {
             <li class="nav-item">
               <router-link class="nav-link" to="/about">About</router-link>
             </li>
-
             <li class="nav-item">
               <router-link class="nav-link" to="/firelogin">Firebase Login</router-link>
             </li>
-
             <li class="nav-item">
               <router-link class="nav-link" to="/fireregister">Register</router-link>
+            </li>
+
+            <li class="nav-item" v-if="isAuthenticated">
+              <router-link class="nav-link" to="/logout">Log out</router-link>
             </li>
           </ul>
 

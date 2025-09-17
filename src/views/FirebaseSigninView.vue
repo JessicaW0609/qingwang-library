@@ -12,6 +12,13 @@ const errorMsg = ref('')
 const router = useRouter()
 const auth = getAuth()
 
+function deriveRoleByEmail(e) {
+  const lower = (e || '').toLowerCase().trim()
+  if (lower.startsWith('admin')) return 'Admin'
+  if (lower.endsWith('@monash.edu')) return 'Staff'
+  return 'Student'
+}
+
 const signin = async () => {
   errorMsg.value = ''
 
@@ -30,6 +37,9 @@ const signin = async () => {
     console.log(auth.currentUser)
 
     localStorage.setItem('isAuthenticated', 'true')
+
+    localStorage.setItem('email', emailTrim)
+    localStorage.setItem('role', deriveRoleByEmail(emailTrim))
 
     const redirect =
       typeof router.currentRoute.value.query.redirect === 'string'
